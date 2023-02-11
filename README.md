@@ -4,10 +4,13 @@
 
 ## [Multithreading Interview Questions](https://www.digitalocean.com/community/tutorials/java-multithreading-concurrency-interview-questions-answers)
 1. What is the difference between Process and Thread?
-   - ```Program``` - A program is set of instructions(a rule or a statement). Program is passive.
-   - ```Process``` - A program under execution is called a Process. Process is active. Processes do not share memory.
-   - ```Thread``` - A unit or portion of Process that executes independently and A Process can have many threads running parallely.
-   - Multiple Threads share common heap memory of the parent Process. Each Thread has It's own Thread Stack.
+   - ```Program``` 
+     - A program is set of instructions(a rule or a statement). Program is passive.
+   - ```Process``` 
+     - A program under execution is called a Process. Process is active. Processes do not share memory.
+   - ```Thread```
+     - A unit or portion of Process that executes independently and A Process can have many threads running parallely.
+     - Multiple Threads share common heap memory of the parent Process. Each Thread has Its own Thread Stack.
 2. What are the benefits of multithreaded programming?
    - To create high performing applications.
    - Independent tasks can be executed by multiple threads such applications can use multi threading and hence improve performance.
@@ -34,7 +37,7 @@
 11. How can we make sure main() is the last thread to finish in Java Program? 
     - Use all thread as user threads and not the daemon thread. Main thread will terminate after executing all user threads.
 12. Which is more preferred - Synchronized method or Synchronized block?
-13. What is Deadlock(explain using Reader/Writer Problem)? How to analyze and avoid deadlock situation?
+13. What is Deadlock(explain using Reader/Writer Problem)? How to analyze/detect and avoid deadlock situation?
 14. How does threads communicate with each other? 
     - Different threads communicate with each other using `wait()`, `notify()` and `notifyAll()` methods.
 15. Why thread communication methods wait(), notify() and notifyAll() are in Object class? 
@@ -63,4 +66,4 @@
 9. What are some improvements in Concurrency API in Java 8?
 
 
-Write in char streaming and set priority isn't working.
+Writing in char streaming and set priority isn't working.
