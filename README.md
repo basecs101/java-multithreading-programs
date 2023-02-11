@@ -18,7 +18,7 @@
    - A daemon thread executes task that is of less priority and a thread is made daemon using thread1.setDaemon(true);
 4. [How can we create a Thread in Java?](https://medium.com/javarevisited/how-to-create-java-thread-using-thread-and-runnable-2023-14e965474a7)
 
-5. What are different states in lifecycle of Thread?
+5. What are different states in lifecycle of Thread? 
    1. `NEW`
    2. `RUNNABLE`
    3. `TIMED_WAITING`
