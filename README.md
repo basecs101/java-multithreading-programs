@@ -15,7 +15,20 @@
    - To create high performing applications.
    - Independent tasks can be executed by multiple threads such applications can use multi threading and hence improve performance.
 3. What is difference between user Thread and daemon Thread? 
-   - A daemon thread executes task that is of less priority and a thread is made daemon using thread1.setDaemon(true);
+   - In Java, a daemon thread is a low priority thread that runs in the background and does not prevent the JVM (Java Virtual Machine) from exiting. These threads are typically used for background tasks that do not have a significant impact on the overall performance of the application, such as garbage collection or logging. 
+   - Daemon threads are different from user threads in that they do not prevent the JVM from shutting down. When the JVM determines that all user threads have completed, it will exit, even if there are still daemon threads running. This is why it's important to ensure that any data structures or resources that a daemon thread is using are properly handled and cleaned up, as the JVM may exit without warning.
+   - By default, all the threads are user threads in Java.
+   - In Java, you can set a thread to be a daemon thread by calling the setDaemon() method on the Thread object, and passing in "true". For example:
+     - ``` 
+       Thread myThread = new Thread(new Runnable() { 
+          public void run() {
+             // Perform background task
+          }
+       });
+       myThread.setDaemon(true);
+       myThread.start();
+       ```
+
 4. [How can we create a Thread in Java?](https://medium.com/javarevisited/how-to-create-java-thread-using-thread-and-runnable-2023-14e965474a7)
 
 5. What are different states in lifecycle of Thread? 
