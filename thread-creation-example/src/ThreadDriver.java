@@ -2,7 +2,12 @@
 class NumberPrinter {
 
     /**
-     * synchronized keyword make sure that one thread executes the method at any given time
+     * synchronized keyword make sure that one thread executes the method at any given time.
+     * If threads are not synchronized then all 4 threads will be executing in parallel
+     * (all threads running at the same time).
+     * General rule for number of threads and cpu cores is 1:1 mapping.
+     * In below code, if threads are not synchronized then they all be running in parallel at
+     * the same time.
      */
      void print() {
 
@@ -10,7 +15,7 @@ class NumberPrinter {
              try {
                  for (int i=1; i<=10;i++){
                      Thread.sleep(100);
-                     System.out.println(Thread.currentThread().getName() + " "+ i);
+                     System.out.println(System.currentTimeMillis() + " " +Thread.currentThread().getName() + " "+ i);
                  }
              } catch (InterruptedException e){
                  e.printStackTrace();
