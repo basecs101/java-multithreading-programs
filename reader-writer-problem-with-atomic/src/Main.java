@@ -1,3 +1,5 @@
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A CPU can be dual or quad-core and each can run one thread.
@@ -21,29 +23,26 @@
  * Now we are using atomic instead of volatile but the problem still exist where
  * the message written by writer is overridden by itself and hence proper reader-writer
  * functioning is missing
- *
- * If reader thread starts first then it acquires lock and goes into WAITING state
- * and Writer goes into BLOCKED state.
  */
 class Message {
-    String msg;
-    boolean isMsgEmpty;
+    AtomicReference<String> msg;
+    AtomicBoolean isEmpty;
 
-    public Message(String msg, boolean isMsgEmpty) {
+    public Message(AtomicReference<String> msg, AtomicBoolean isEmpty) {
         this.msg = msg;
-        this.isMsgEmpty = isMsgEmpty;
+        this.isEmpty = isEmpty;
     }
 
-    public synchronized String read(){
-        while (this.isMsgEmpty);// wait till a message is written by Writer Thread
-        this.isMsgEmpty = true;
-        return this.msg ;
+    public String read(){
+        while (this.isEmpty.get());// wait till a message is written by Writer Thread
+        this.isEmpty.set(true);
+        return this.msg.get();
     }
 
-    public synchronized void write(String msg){
-        while (!this.isMsgEmpty);//wait till there is already a message
-        System.out.println(this.msg = msg);
-        System.out.println(this.isMsgEmpty = false);
+    public void write(String msg){
+        while (!this.isEmpty.get());//wait till there is already a message
+        this.msg.set(msg);
+        this.isEmpty.set(false);
     }
 }
 
@@ -91,14 +90,15 @@ class Writer implements Runnable {
 
 public class Main {
     public static void main(String[] args) {
-        Message message = new Message("",true);
+        Message message = new Message(new AtomicReference<>(""),
+                new AtomicBoolean(true));
 
         Thread readerThread = new Thread(new Reader(message));
         readerThread.setName("ReaderThread");
+        readerThread.start();
 
         Thread writerThread = new Thread(new Writer(message));
         writerThread.setName("WriterThread");
-        readerThread.start();
         writerThread.start();
     }
 }

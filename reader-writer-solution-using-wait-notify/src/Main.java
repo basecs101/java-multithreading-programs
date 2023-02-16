@@ -1,65 +1,76 @@
 
 class Message {
     String msg;
-    boolean isMsgEmpty;
+    boolean isEmpty;
 
-    public Message(String msg, boolean isMsgEmpty) {
+    public Message(String msg, boolean isEmpty) {
         this.msg = msg;
-        this.isMsgEmpty = isMsgEmpty;
+        this.isEmpty = isEmpty;
     }
 
     public synchronized String read() {
-        while (this.isMsgEmpty){
+        if (this.isEmpty){
             try {
+                System.out.println("Reader is in waiting state!!");
                 this.wait();
-                    // wait till a message is written by Writer Thread
+                /*
+                 wait till a message is written by Writer Thread
+                 and start executing from next line
+                 */
             } catch (InterruptedException e){
                 e.printStackTrace();
             }
         }
-        this.isMsgEmpty = true;
+        this.isEmpty = true;
+        System.out.println("Message Read by Reader : "+this.msg);
+        this.msg = "";
+        try{
+            Thread.sleep(1000);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
         this.notifyAll();
         return this.msg ;
     }
 
     public synchronized void write(String msg) {
-        while (!this.isMsgEmpty){
+        if (!this.isEmpty){
             try {
-                    this.wait();
+                this.wait();
                     //wait till there is already a message
             } catch (InterruptedException e){
                 e.printStackTrace();
             }
-
         }
         this.msg = msg;
-        this.isMsgEmpty = false;
-
+        this.isEmpty = false;
+        System.out.println("Message Written by Writer : "+this.msg);
+        try{
+            Thread.sleep(1000);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
         this.notifyAll();
     }
 }
 
 class Reader implements Runnable {
-
     Message message;
-
     public Reader(Message message) {
         this.message = message;
     }
 
     @Override
     public void run() {
-        for (String msg = this.message.read();
-             !"Finished Writing!!".equals(msg) ; msg = this.message.read() ) {
-            System.out.println("Message Read by Reader : "+this.message.read());
+        String msg = this.message.read();
+        while ( !"Finished Writing!!".equals(msg)){
+            msg = this.message.read();
         }
     }
 }
 
 class Writer implements Runnable {
-
     Message message;
-
     public Writer(Message message) {
         this.message = message;
     }
@@ -70,13 +81,9 @@ class Writer implements Runnable {
         String[] messages = {"Hello", "How","are","you"};
 
         for (String msg: messages) {
-
             this.message.write(msg);
-
         }
-
         this.message.write("Finished Writing!!");
-
     }
 }
 
@@ -89,6 +96,7 @@ public class Main {
 
         Thread writerThread = new Thread(new Writer(message));
         writerThread.setName("WriterThread");
+
         readerThread.start();
         writerThread.start();
     }
