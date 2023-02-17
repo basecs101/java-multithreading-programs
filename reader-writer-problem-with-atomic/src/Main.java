@@ -1,3 +1,4 @@
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -18,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * atomic internally usage volatile but it make sure that operation is atomic and
  * one thread is accessing/updating the atomic at a time
  *
- * Atomic -> volatile + thread safety for variable.
+ * Atomic -> volatile + thread safety for variables.
  *
  * Now we are using atomic instead of volatile but the problem still exist where
  * the message written by writer is overridden by itself and hence proper reader-writer
@@ -26,47 +27,48 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 class Message {
     AtomicReference<String> msg;
-    AtomicBoolean isEmpty;
+    AtomicBoolean empty;
 
-    public Message(AtomicReference<String> msg, AtomicBoolean isEmpty) {
+    public Message(AtomicReference<String> msg, AtomicBoolean empty) {
         this.msg = msg;
-        this.isEmpty = isEmpty;
+        this.empty = empty;
     }
 
     public String read(){
-        while (this.isEmpty.get());// wait till a message is written by Writer Thread
-        this.isEmpty.set(true);
+        while (this.empty.get());// wait till a message is written by Writer Thread
+        this.empty.set(true);
         return this.msg.get();
     }
 
     public void write(String msg){
-        while (!this.isEmpty.get());//wait till there is already a message
+        while (!this.empty.get());//wait till there is already a message
         this.msg.set(msg);
-        this.isEmpty.set(false);
+        this.empty.set(false);
     }
 }
 
 class Reader implements Runnable {
-
     Message message;
-
     public Reader(Message message) {
         this.message = message;
     }
 
     @Override
     public void run() {
-        for (String msg = this.message.read();
-             !msg.equals("Finished Writing!!") ; msg = this.message.read() ) {
-            System.out.println("Message Read by Reader : "+this.message.read());
+        Random random = new Random();
+        for (String latestMessage = message.read(); !"Finished!".equals(latestMessage); latestMessage = message.read()) {
+            System.out.println("Reader read : "+latestMessage);
+            try {
+                Thread.sleep(random.nextInt(2000));
+            } catch (InterruptedException e) {
+                System.out.println("Reader Thread Interrupted!!!");
+            }
         }
     }
 }
 
 class Writer implements Runnable {
-
     Message message;
-
     public Writer(Message message) {
         this.message = message;
     }
@@ -74,19 +76,29 @@ class Writer implements Runnable {
     @Override
     public void run() {
 
-        String[] messages = {"Hello", "How","are","you"};
+        String[] messages = {
+                "Humpty Dumpty sat on a wall",
+                "Humpty Dumpty had a great fall",
+                "All the king's horses and all the king's men",
+                "Couldn't put Humpty together again"
+        };
 
-        for (String msg: messages) {
+        Random random = new Random();
 
-            this.message.write(msg);
-            System.out.println("Message Written by Writer : "+msg);
-
+        for (String msg : messages) {
+            message.write(msg);
+            System.out.println("Writer wrote : "+msg);
+            try {
+                Thread.sleep(random.nextInt(2000));
+            } catch (InterruptedException e) {
+                System.out.println("Writer Thread Interrupted!!!");
+            }
         }
-
-        this.message.write("Finished Writing!!");
-
+        message.write("Finished!");
     }
 }
+
+
 
 public class Main {
     public static void main(String[] args) {

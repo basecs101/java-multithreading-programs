@@ -1,3 +1,4 @@
+import java.util.Random;
 
 /**
  * A CPU can be dual or quad-core and each can run one thread.
@@ -27,47 +28,48 @@
  */
 class Message {
     String msg;
-    boolean isMsgEmpty;
+    boolean empty;
 
-    public Message(String msg, boolean isMsgEmpty) {
+    public Message(String msg, boolean empty) {
         this.msg = msg;
-        this.isMsgEmpty = isMsgEmpty;
+        this.empty = empty;
     }
 
     public synchronized String read(){
-        while (this.isMsgEmpty);// wait till a message is written by Writer Thread
-        this.isMsgEmpty = true;
+        while (this.empty);// wait till a message is written by Writer Thread
+        this.empty = true;
         return this.msg ;
     }
 
     public synchronized void write(String msg){
-        while (!this.isMsgEmpty);//wait till there is already a message
-        System.out.println(this.msg = msg);
-        System.out.println(this.isMsgEmpty = false);
+        while (!this.empty);//wait till there is already a message
+        this.msg = msg;
+        this.empty = false;
     }
 }
 
 class Reader implements Runnable {
-
     Message message;
-
     public Reader(Message message) {
         this.message = message;
     }
 
     @Override
     public void run() {
-        for (String msg = this.message.read();
-             !msg.equals("Finished Writing!!") ; msg = this.message.read() ) {
-            System.out.println("Message Read by Reader : "+this.message.read());
+        Random random = new Random();
+        for (String latestMessage = message.read(); !"Finished!".equals(latestMessage); latestMessage = message.read()) {
+            System.out.println("Reader read : "+latestMessage);
+            try {
+                Thread.sleep(random.nextInt(2000));
+            } catch (InterruptedException e) {
+                System.out.println("Reader Thread Interrupted!!!");
+            }
         }
     }
 }
 
 class Writer implements Runnable {
-
     Message message;
-
     public Writer(Message message) {
         this.message = message;
     }
@@ -75,19 +77,29 @@ class Writer implements Runnable {
     @Override
     public void run() {
 
-        String[] messages = {"Hello", "How","are","you"};
+        String[] messages = {
+                "Humpty Dumpty sat on a wall",
+                "Humpty Dumpty had a great fall",
+                "All the king's horses and all the king's men",
+                "Couldn't put Humpty together again"
+        };
 
-        for (String msg: messages) {
+        Random random = new Random();
 
-            this.message.write(msg);
-            System.out.println("Message Written by Writer : "+msg);
-
+        for (String msg : messages) {
+            message.write(msg);
+            System.out.println("Writer wrote : "+msg);
+//            try {
+//                Thread.sleep(random.nextInt(2000));
+//            } catch (InterruptedException e) {
+//                System.out.println("Writer Thread Interrupted!!!");
+//            }
         }
-
-        this.message.write("Finished Writing!!");
-
+        message.write("Finished!");
     }
 }
+
+
 
 public class Main {
     public static void main(String[] args) {

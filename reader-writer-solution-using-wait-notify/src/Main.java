@@ -1,56 +1,59 @@
+import java.util.Random;
 
 class Message {
-    String msg;
-    boolean isEmpty;
+    String message;
+    boolean empty = true;
 
-    public Message(String msg, boolean isEmpty) {
-        this.msg = msg;
-        this.isEmpty = isEmpty;
-    }
-
+    //Method used by reader
     public synchronized String read() {
-        if (this.isEmpty){
+        while (empty) {
             try {
-                System.out.println("Reader is in waiting state!!");
-                this.wait();
                 /*
-                 wait till a message is written by Writer Thread
-                 and start executing from next line
+                 Reader thread waits until Writer invokes the notify()
+                 method or the notifyAll() method for 'message' object.
+                 Reader thread releases ownership of lock and waits
+                 until Writer thread notifies Reader thread waiting on
+                 this object's lock to wake up either through a call to
+                 the notify method or the notifyAll method.
                  */
-            } catch (InterruptedException e){
-                e.printStackTrace();
+                wait();
+            } catch (InterruptedException e) {
+                System.out.println(Thread.currentThread().getName() + "Interrupted.");
             }
         }
-        this.isEmpty = true;
-        System.out.println("Message Read by Reader : "+this.msg);
-        this.msg = "";
-        try{
-            Thread.sleep(1000);
-        }catch (InterruptedException e){
-            e.printStackTrace();
-        }
-        this.notifyAll();
-        return this.msg ;
+        empty = true;//Reader reads the message and marks empty as true.
+        /*
+         Wakes up all threads that are waiting on 'message' object's monitor(lock).
+         This thread(Reader) releases the lock for 'message' object.
+         */
+        notifyAll();
+        return message;//Reader reads the message.
     }
 
-    public synchronized void write(String msg) {
-        if (!this.isEmpty){
+    //Method used by writer
+    public synchronized void write(String message) {
+        while (!empty) {
             try {
-                this.wait();
-                    //wait till there is already a message
-            } catch (InterruptedException e){
-                e.printStackTrace();
+                /*
+                 Writer thread waits until Reader invokes the notify()
+                 method or the notifyAll() method for 'message' object.
+                 Writer thread releases ownership of lock and waits
+                 until Reader thread notifies Writer thread waiting on
+                 this object's lock to wake up either through a call to
+                 the notify method or the notifyAll method.
+                 */
+                wait();
+            } catch (InterruptedException e) {
+                System.out.println(Thread.currentThread().getName() + "Interrupted.");
             }
         }
-        this.msg = msg;
-        this.isEmpty = false;
-        System.out.println("Message Written by Writer : "+this.msg);
-        try{
-            Thread.sleep(1000);
-        }catch (InterruptedException e){
-            e.printStackTrace();
-        }
-        this.notifyAll();
+        this.message = message;//Writer writes the message.
+        empty = false;//Now make empty as false.
+        /*
+         Wakes up all threads that are waiting on 'message' object's monitor(lock).
+         This thread(Writer) releases the lock for 'message' object.
+         */
+        notifyAll();
     }
 }
 
@@ -62,9 +65,14 @@ class Reader implements Runnable {
 
     @Override
     public void run() {
-        String msg = this.message.read();
-        while ( !"Finished Writing!!".equals(msg)){
-            msg = this.message.read();
+        Random random = new Random();
+        for (String latestMessage = message.read(); !"Finished!".equals(latestMessage); latestMessage = message.read()) {
+            System.out.println("Reader read : "+latestMessage);
+            try {
+                Thread.sleep(random.nextInt(2000));
+            } catch (InterruptedException e) {
+                System.out.println("Reader Thread Interrupted!!!");
+            }
         }
     }
 }
@@ -78,18 +86,31 @@ class Writer implements Runnable {
     @Override
     public void run() {
 
-        String[] messages = {"Hello", "How","are","you"};
+        String[] messages = {
+                "Humpty Dumpty sat on a wall",
+                "Humpty Dumpty had a great fall",
+                "All the king's horses and all the king's men",
+                "Couldn't put Humpty together again"
+        };
 
-        for (String msg: messages) {
-            this.message.write(msg);
+        Random random = new Random();
+
+        for (String msg : messages) {
+            message.write(msg);
+            System.out.println("Writer wrote : "+ msg);
+            try {
+                Thread.sleep(random.nextInt(2000));
+            } catch (InterruptedException e) {
+                System.out.println("Writer Thread Interrupted!!!");
+            }
         }
-        this.message.write("Finished Writing!!");
+        message.write("Finished!");
     }
 }
 
 public class Main {
     public static void main(String[] args) {
-        Message message = new Message("",true);
+        Message message = new Message();
 
         Thread readerThread = new Thread(new Reader(message));
         readerThread.setName("ReaderThread");

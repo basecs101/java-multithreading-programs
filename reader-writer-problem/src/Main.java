@@ -8,23 +8,23 @@
  */
 class Message {
     String msg;
-    boolean isMsgEmpty;
+    boolean empty;
 
-    public Message(String msg, boolean isMsgEmpty) {
+    public Message(String msg, boolean empty) {
         this.msg = msg;
-        this.isMsgEmpty = isMsgEmpty;
+        this.empty = empty;
     }
 
     public String read(){
-        while (this.isMsgEmpty);// wait till a message is written by Writer Thread
-        this.isMsgEmpty = true;
+        while (this.empty);// wait till a message is written by Writer Thread
+        this.empty = true;
         return this.msg ;
     }
 
     public void write(String msg){
-        while (!this.isMsgEmpty);//wait till there is already a message
+        while (!this.empty);//wait till there is already a message
         this.msg = msg;
-        this.isMsgEmpty = false;
+        this.empty = false;
     }
 }
 
@@ -39,8 +39,11 @@ class Reader implements Runnable {
     @Override
     public void run() {
         for (String msg = this.message.read();
-             !msg.equals("Finished Writing!!") ; msg = this.message.read() ) {
-            System.out.println("Message Read by Reader : "+this.message.read());
+             !msg.equals("Finished Writing!!");
+             msg = this.message.read())
+
+        {
+            System.out.println("Message Read by Reader : "+msg);
         }
     }
 }
